@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block title %}{{ username }}'s VPS — MAHIM VPS{% endblock %}
+{% block body %}
+<div class="wrap">
+    <!-- ===== HEADER ===== -->
+    <div class="flex-between flex-wrap" style="gap:16px;margin-bottom:28px;">
+        <div class="flex" style="gap:18px;align-items:center;">
+            <div style="width:60px;height:60px;border-radius:16px;background:var(--gradient-accent);display:grid;place-items:center;font-size:28px;box-shadow:0 10px 40px rgba(6,182,212,0.3);">
+                <i class="fas fa-server"></i>
+            </div>
+            <div>
+                <h1 style="font-size:26px;margin:0;" class="gradient-text">
+                    {{ username }}'s VPS
+                </h1>
+                <div class="flex" style="gap:12px;margin-top:4px;flex-wrap:wrap;">
+                    {% if running %}
+                    <span class="badge badge-on">
+                        <i class="fas fa-circle" style="font-size:8px;color:#34d399;"></i> RUNNING
+                    </span>
+                    <span class="badge badge-primary">
+                        <i class="fas fa-file-code"></i> {{ running_file }}
+                    </span>
+                    {% else %}
+                    <span class="badge badge-off">
+                        <i class="fas fa-circle" style="font-size:8px;"></i> STOPPED
+                    </span>
+                    <span class="muted">No process running</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% if expires_at %}
+        <div class="card" style="padding:12px 24px;margin:0;background:rgba(245,158,11,0.06);border-color:rgba(245,158,11,0.15);">
+            <span class="muted" style="font-size:12px;">
+                <i class="fas fa-hourglass-half"></i> Session Expires In
+            </span>
+            <div style="font-weight:900;color:#fbbf24;font-size:22px;text-align:center;">
+                {{ ((expires_at-now)/3600)|round(1) }} <span style="font-size:14px;font-weight:400;">hours</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== MOTIVATIONAL BANNER ===== -->
+    <div class="card" style="background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.05));border-color:rgba(99,102,241,0.15);padding:16px 24px;margin-bottom:24px;">
+        <div class="flex-between flex-wrap" style="gap:12px;">
+            <div class="flex" style="gap:14px;align-items:center;">
+                <i class="fas fa-lightbulb" style="color:#fbbf24;font-size:24px;"></i>
+                <span class="text-secondary" style="font-size:15px;">
+                    <span class="gradient-text" style="font-weight:700;">💡 Pro Tip:</span> 
+                    Upload your <code>.py</code> or <code>.js</code> file, click start, and watch it come alive!
+                </span>
+            </div>
+            <span class="badge badge-premium" style="font-size:10px;">
+                <i class="fas fa-fire"></i> 1,234+ deploys today
+            </span>
+        </div>
+    </div>
+
+    <!-- ===== MAIN GRID ===== -->
+    <div class="grid-2">
+        <!-- LEFT COLUMN -->
+        <div>
+            <!-- Upload -->
+            <div class="card">
+                <h2><i class="fas fa-upload" style="color:#8b5cf6;"></i> Upload Files</h2>
+                <form method="post" action="/upload" enctype="multipart/form-data" class="row">
+                    <input type="file" name="files" multiple required style="flex:1;padding:12px;cursor:pointer;">
+                    <button class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+                </form>
+                <p class="muted" style="margin:10px 0 0;font-size:12px;">
+                    <i class="fas fa-info-circle" style="color:#06b6d4;"></i>
+                    Supported: <code>.py</code> · <code>.js</code> · <code>.sh</code> · <code>.html</code> · <code>.json</code> (max 200MB)
+                </p>
+            </div>
+
+            <!-- Files -->
+            <div class="card">
+                <h2><i class="fas fa-folder-open" style="color:#f59e0b;"></i> Your Files ({{ files|length }})</h2>
+                <ul style="list-style:none;padding:0;margin:0;max-height:320px;overflow:auto;">
+                    {% for f in files %}
+                    <li style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border-subtle);font-size:13px;gap:10px;transition:var(--transition);">
+                        <span class="flex" style="gap:10px;align-items:center;min-width:0;">
+                            <i class="fas fa-file-code" style="color:#a5b4fc;font-size:16px;"></i>
+                            <span style="word-break:break-all;">{{ f }}</span>
+                        </span>
+                        <span class="flex" style="gap:6px;flex-wrap:wrap;">
+                            <a href="/file/view/{{ f }}" target="_blank" class="btn btn-ghost btn-xs" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if f.endswith('.py') or f.endswith('.js') or f.endswith('.mjs') or f.endswith('.sh') %}
+                            <button class="btn btn-success btn-xs" onclick="startFile('{{ f }}')" title="Start">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            {% endif %}
+                            <form class="inline" method="post" action="/file/delete/{{ f }}" onsubmit="return confirm('Delete {{ f }}?')">
+                                <button class="btn btn-danger btn-xs" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </span>
+                    </li>
+                    {% else %}
+                    <li class="text-center" style="padding:30px 0;">
+                        <i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:12px;color:var(--text-muted);"></i>
+                        <p class="muted">No files uploaded yet.</p>
+                        <p class="muted" style="font-size:13px;">Upload your first file above to get started!</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Install -->
+            <div class="card">
+                <h2><i class="fas fa-cube" style="color:#06b6d4;"></i> Package Installer</h2>
+                <form class="row" onsubmit="return doInstall(event);">
+                    <input id="cmd" placeholder="pip install requests" style="flex:1;" required>
+                    <button class="btn btn-primary"><i class="fas fa-terminal"></i> Install</button>
+                </form>
+                <p class="muted" style="margin:10px 0 10px;font-size:12px;">
+                    <i class="fas fa-check-circle" style="color:#34d399;"></i>
+                    Supports: <code>pip install &lt;mod&gt;</code> · <code>npm install &lt;mod&gt;</code>
+                </p>
+                <div id="installLogs" class="code-block code-block-dark" style="height:120px;font-size:12px;border-color:rgba(6,182,212,0.15);">
+                    <span class="muted">Ready for install...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div>
+            <!-- Controls -->
+            <div class="card">
+                <h2><i class="fas fa-sliders-h" style="color:#f59e0b;"></i> Server Controls</h2>
+                <div class="row" style="gap:10px;">
+                    <button class="btn btn-warning" onclick="restart()" title="Restart server">
+                        <i class="fas fa-sync-alt"></i> Restart
+                    </button>
+                    <button class="btn btn-danger" onclick="stop()" title="Stop server">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                    <button class="btn btn-ghost" onclick="delServer()" title="Clear all">
+                        <i class="fas fa-eraser"></i> Clear
+                    </button>
+                </div>
+                <div class="flex-center mt-16" style="gap:20px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);">
+                    <span><i class="fas fa-check-circle" style="color:#34d399;"></i> Auto-restart on crash</span>
+                    <span><i class="fas fa-shield-alt" style="color:#8b5cf6;"></i> Isolated environment</span>
+                </div>
+            </div>
+
+            <!-- Logs -->
+            <div class="card" style="flex:1;">
+                <div class="flex-between flex-wrap" style="margin-bottom:12px;">
+                    <h2 style="margin:0;"><i class="fas fa-terminal" style="color:#34d399;"></i> Live Logs</h2>
+                    <span class="badge badge-on" style="font-size:9px;padding:4px 12px;">
+                        <i class="fas fa-circle" style="font-size:6px;"></i> LIVE
+                    </span>
+                </div>
+                <div id="logs" class="code-block" style="height:380px;font-size:12px;border-color:rgba(16,185,129,0.15);">
+                    <span class="muted">⏳ Waiting for output...</span>
+                </div>
+                <p class="muted text-center" style="font-size:11px;margin-top:10px;">
+                    <i class="fas fa-sync-alt fa-spin"></i> Auto-refreshing every 1.2s
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== API HELPERS =====
+    async function post(url, body) {
+        const r = await fetch(url, { method: 'POST', body: body || new FormData() });
+        return r.json();
+    }
+
+    // ===== FILE CONTROL =====
+    async function startFile(f) {
+        const fd = new FormData();
+        fd.append('file', f);
+        const r = await post('/server/start', fd);
+        if (!r.ok) alert('❌ ' + r.msg);
+        setTimeout(() => location.reload(), 600);
+    }
+
+    async function restart() {
+        const r = await post('/server/restart');
+        if (!r.ok) alert('❌ ' + (r.msg || 'No file running'));
+        else showSuccess('✅ Server restarted successfully!');
+    }
+
+    async function stop() {
+        await post('/server/stop');
+        showSuccess('⏹ Server stopped.');
+    }
+
+    async function delServer() {
+        if (confirm('⚠️ Stop and clear all processes?')) {
+            await post('/server/delete');
+            showSuccess('🧹 Server cleared.');
+            setTimeout(() => location.reload(), 500);
+        }
+    }
+
+    function showSuccess(msg) {
+        const log = document.getElementById('logs');
+        const timestamp = new Date().toLocaleTimeString();
+        log.textContent = `[${timestamp}] ${msg}\n` + log.textContent;
+    }
+
+    // ===== INSTALL =====
+    async function doInstall(e) {
+        e.preventDefault();
+        const cmdInput = document.getElementById('cmd');
+        const cmd = cmdInput.value.trim();
+        if (!cmd) return false;
+
+        const fd = new FormData();
+        fd.append('command', cmd);
+        const r = await post('/install', fd);
+        if (!r.ok) alert('❌ ' + r.msg);
+        cmdInput.value = '';
+        return false;
+    }
+
+    // ===== LOGS POLLING =====
+    const logBox = document.getElementById('logs');
+    const instBox = document.getElementById('installLogs');
+
+    async function tick() {
+        try {
+            const r = await fetch('/logs');
+            const j = await r.json();
+
+            const atBottom = logBox.scrollTop + logBox.clientHeight >= logBox.scrollHeight - 30;
+            if (j.logs && j.logs.length) {
+                logBox.textContent = j.logs.join('\n');
+            } else {
+                logBox.textContent = '⏳ Waiting for output...';
+            }
+            if (atBottom) logBox.scrollTop = logBox.scrollHeight;
+
+            if (j.install && j.install.length) {
+                instBox.textContent = j.install.join('\n');
+            } else {
+                instBox.textContent = '📦 Ready for install...';
+            }
+            instBox.scrollTop = instBox.scrollHeight;
+        } catch (e) {
+            // silent
+        }
+    }
+    setInterval(tick, 1200);
+    tick();
+
+    // ===== KEYBOARD SHORTCUTS =====
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            const cmd = document.getElementById('cmd');
+            if (document.activeElement === cmd) {
+                doInstall(e);
+            }
+        }
+    });
+</script>
+{% endblock %}

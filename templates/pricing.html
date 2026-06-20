@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}Pricing — MAHIM VPS Premium Plans{% endblock %}
+{% block body %}
+<div class="wrap">
+    <!-- ===== HEADER ===== -->
+    <section class="text-center" style="padding:50px 0 30px;">
+        <span class="badge badge-gold" style="margin-bottom:16px;padding:8px 24px;font-size:12px;">
+            <i class="fas fa-crown"></i> PREMIUM PLANS
+        </span>
+        <h1 class="animate-text" style="font-size:44px;font-weight:900;">
+            Choose Your <span class="gradient-text-rainbow">Perfect Plan</span>
+        </h1>
+        <p class="text-secondary animate-text-delay" style="font-size:18px;max-width:600px;margin:16px auto;line-height:1.7;">
+            Select a plan that fits your needs. Pay the owner and get instant access.
+        </p>
+        
+        <!-- ===== FEATURES HIGHLIGHT ===== -->
+        <div class="flex-center mt-24" style="gap:24px;flex-wrap:wrap;font-size:13px;color:var(--text-muted);">
+            <span><i class="fas fa-check-circle" style="color:#34d399;"></i> 24/7 Support</span>
+            <span><i class="fas fa-check-circle" style="color:#34d399;"></i> DDoS Protection</span>
+            <span><i class="fas fa-check-circle" style="color:#34d399;"></i> Auto-Scale</span>
+            <span><i class="fas fa-check-circle" style="color:#34d399;"></i> 99.9% Uptime</span>
+        </div>
+    </section>
+
+    <!-- ===== PRICING CARDS ===== -->
+    <div class="grid-3" style="margin-top:30px;">
+        {% for p in pricing.plans %}
+        <div class="card text-center {% if loop.index == 3 %}card-premium pulse-glow{% endif %} animate-in" 
+             style="animation-delay:{{ loop.index * 0.15 }}s;display:flex;flex-direction:column;">
+            
+            {% if loop.index == 1 %}
+            <div class="badge badge-primary" style="margin-bottom:16px;align-self:center;">
+                <i class="fas fa-rocket"></i> STARTER
+            </div>
+            {% elif loop.index == 2 %}
+            <div class="badge badge-warning" style="margin-bottom:16px;align-self:center;">
+                <i class="fas fa-fire"></i> POPULAR
+            </div>
+            {% elif loop.index == 3 %}
+            <div class="badge badge-premium" style="margin-bottom:16px;align-self:center;padding:8px 24px;">
+                <i class="fas fa-star"></i> BEST VALUE
+            </div>
+            {% endif %}
+
+            <h3 style="font-size:24px;font-weight:800;margin-bottom:4px;">{{ p.name }}</h3>
+            
+            <div style="font-size:48px;font-weight:900;margin:12px 0;" class="gradient-text-rainbow">
+                {{ pricing.currency }}{{ p.price }}
+            </div>
+            
+            <div class="muted" style="font-size:14px;margin-bottom:16px;">
+                <i class="fas fa-clock" style="color:#8b5cf6;"></i> {{ p.duration }}
+            </div>
+            
+            <div style="font-size:14px;color:var(--text-secondary);line-height:2;flex:1;min-height:80px;padding:0 8px;">
+                {% set features = p.features.split(',') %}
+                {% for feature in features %}
+                <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+                    <i class="fas fa-check-circle" style="color:#34d399;font-size:12px;"></i>
+                    <span>{{ feature.strip() }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+                <a href="/login" class="btn {% if loop.index == 3 %}btn-gradient{% else %}btn-primary{% endif %} btn-glow" 
+                   style="width:100%;justify-content:center;padding:14px;">
+                    <i class="fas fa-shopping-cart"></i> Get Started
+                </a>
+                {% if loop.index == 3 %}
+                <span style="font-size:11px;color:var(--text-muted);">
+                    <i class="fas fa-gift"></i> Free setup included
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ===== COMPARISON TABLE ===== -->
+    <div class="card mt-48" style="overflow:hidden;">
+        <h2 class="text-center" style="font-size:28px;margin-bottom:20px;">
+            <span class="gradient-text">Compare</span> All Plans
+        </h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="min-width:120px;">Features</th>
+                        {% for p in pricing.plans %}
+                        <th class="text-center">
+                            {{ p.name }}
+                            {% if loop.index == 2 %}
+                            <span class="badge badge-warning" style="font-size:8px;padding:2px 10px;display:block;margin-top:4px;">🔥 POPULAR</span>
+                            {% elif loop.index == 3 %}
+                            <span class="badge badge-gold" style="font-size:8px;padding:2px 10px;display:block;margin-top:4px;">⭐ BEST</span>
+                            {% endif %}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Price</strong></td>
+                        {% for p in pricing.plans %}
+                        <td class="text-center"><strong>{{ pricing.currency }}{{ p.price }}</strong></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Duration</strong></td>
+                        {% for p in pricing.plans %}
+                        <td class="text-center">{{ p.duration }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Storage</strong></td>
+                        {% for p in pricing.plans %}
+                        <td class="text-center">
+                            {% if loop.index == 1 %}5 GB
+                            {% elif loop.index == 2 %}20 GB
+                            {% else %}50 GB{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Bandwidth</strong></td>
+                        {% for p in pricing.plans %}
+                        <td class="text-center">
+                            {% if loop.index == 1 %}100 GB
+                            {% elif loop.index == 2 %}500 GB
+                            {% else %}Unlimited{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Concurrent Users</strong></td>
+                        {% for p in pricing.plans %}
+                        <td class="text-center">
+                            {% if loop.index == 1 %}5
+                            {% elif loop.index == 2 %}20
+                            {% else %}100{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Priority Support</strong></td>
+                        {% for p in pricing.plans %}
+                        <td class="text-center">
+                            {% if loop.index == 1 %}
+                            <i class="fas fa-times" style="color:#f87171;"></i>
+                            {% else %}
+                            <i class="fas fa-check" style="color:#34d399;"></i>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Auto-Scaling</strong></td>
+                        {% for p in pricing.plans %}
+                        <td class="text-center">
+                            {% if loop.index == 3 %}
+                            <i class="fas fa-check" style="color:#34d399;"></i>
+                            {% else %}
+                            <i class="fas fa-times" style="color:#f87171;"></i>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== FAQ / CONTACT ===== -->
+    {% if pricing.contact %}
+    <div class="grid-2 mt-32">
+        <div class="card text-center" style="background:rgba(99,102,241,0.05);border-color:rgba(99,102,241,0.12);">
+            <div style="font-size:40px;margin-bottom:12px;">
+                <i class="fas fa-headset" style="color:#8b5cf6;"></i>
+            </div>
+            <h3>Need Help Choosing?</h3>
+            <p class="muted" style="font-size:14px;max-width:300px;margin:8px auto;">
+                Contact the owner for personalized recommendations and custom plans.
+            </p>
+            <div style="margin-top:16px;padding:12px 20px;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);">
+                <span class="muted" style="font-size:12px;">📞 Contact</span>
+                <p style="font-size:18px;font-weight:700;color:var(--text-secondary);">
+                    {{ pricing.contact }}
+                </p>
+            </div>
+        </div>
+
+        <div class="card text-center" style="background:rgba(16,185,129,0.03);border-color:rgba(16,185,129,0.1);">
+            <div style="font-size:40px;margin-bottom:12px;">
+                <i class="fas fa-rocket" style="color:#34d399;"></i>
+            </div>
+            <h3>Ready to Deploy?</h3>
+            <p class="muted" style="font-size:14px;max-width:300px;margin:8px auto;">
+                Get your VPS instantly. Upload your code and start building today.
+            </p>
+            <a href="/login" class="btn btn-success" style="margin-top:16px;width:100%;justify-content:center;padding:14px;">
+                <i class="fas fa-arrow-right"></i> Get Started Now
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== TRUST BADGES ===== -->
+    <div class="text-center mt-32" style="padding:20px 0;">
+        <div class="flex-center" style="gap:30px;flex-wrap:wrap;font-size:13px;color:var(--text-muted);">
+            <span><i class="fas fa-shield-alt" style="color:#34d399;"></i> Secure Payment</span>
+            <span><i class="fas fa-lock" style="color:#34d399;"></i> 256-bit Encryption</span>
+            <span><i class="fas fa-clock" style="color:#34d399;"></i> 24/7 Support</span>
+            <span><i class="fas fa-undo" style="color:#34d399;"></i> 30-Day Guarantee</span>
+            <span><i class="fas fa-users" style="color:#34d399;"></i> 1000+ Happy Users</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ===== EXTRA PRICING STYLES ===== */
+    .pulse-glow {
+        animation: pricingPulse 3s ease-in-out infinite;
+    }
+    @keyframes pricingPulse {
+        0%, 100% { box-shadow: var(--shadow-card), 0 0 30px rgba(139, 92, 246, 0.05); }
+        50% { box-shadow: var(--shadow-card), 0 0 60px rgba(139, 92, 246, 0.15); }
+    }
+    .animate-in {
+        opacity: 0;
+        animation: slideUpIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes slideUpIn {
+        0% { opacity: 0; transform: translateY(30px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .table-wrap {
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+    table td, table th {
+        padding: 14px 18px;
+    }
+    @media (max-width: 768px) {
+        .table-wrap {
+            font-size: 12px;
+        }
+        table td, table th {
+            padding: 10px 12px;
+        }
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Owner Dashboard — MAHIM VPS{% endblock %}
+{% block body %}
+<div class="wrap">
+    <!-- ===== HEADER ===== -->
+    <div class="flex-between flex-wrap" style="gap:16px;margin-bottom:28px;">
+        <div class="flex" style="gap:18px;align-items:center;">
+            <div style="width:60px;height:60px;border-radius:16px;background:var(--gradient-main);display:grid;place-items:center;font-size:28px;box-shadow:0 10px 40px rgba(99,102,241,0.3);">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div>
+                <h1 style="font-size:28px;margin:0;" class="gradient-text-rainbow">Owner Console</h1>
+                <p class="muted" style="margin:0;">Manage users, plans &amp; pricing with ease</p>
+            </div>
+        </div>
+        <div class="flex" style="gap:12px;">
+            <span class="badge badge-on"><i class="fas fa-users"></i> {{ users|length }} Active</span>
+            <span class="badge badge-primary"><i class="fas fa-server"></i> Online</span>
+        </div>
+    </div>
+
+    <!-- ===== CREATE USER ===== -->
+    <div class="card">
+        <h2><i class="fas fa-user-plus" style="color:#34d399;"></i> Create New User</h2>
+        <form method="post" action="/owner/create" class="row">
+            <input name="username" placeholder="Username" required style="flex:1.5;">
+            <input name="password" placeholder="Password" required style="flex:1.5;">
+            <input name="hours" placeholder="Hours" type="number" step="0.5" value="24" required style="max-width:110px;">
+            <button class="btn btn-success"><i class="fas fa-plus"></i> Create User</button>
+        </form>
+        <p class="muted mt-8" style="font-size:12px;">
+            <i class="fas fa-info-circle"></i> Users get auto-login links and time-limited access
+        </p>
+    </div>
+
+    <!-- ===== USER TABLE ===== -->
+    <div class="card">
+        <div class="flex-between flex-wrap" style="margin-bottom:16px;">
+            <h2 style="margin:0;"><i class="fas fa-users" style="color:#8b5cf6;"></i> All Users</h2>
+            <span class="badge badge-gradient">{{ users|length }} total</span>
+        </div>
+        {% if not users %}
+        <div class="text-center" style="padding:40px 0;">
+            <i class="fas fa-user-slash" style="font-size:40px;color:var(--text-muted);display:block;margin-bottom:12px;"></i>
+            <p class="muted">No users registered yet.</p>
+            <p class="muted" style="font-size:13px;">Create your first user above to get started!</p>
+        </div>
+        {% endif %}
+        {% if users %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> User</th>
+                        <th><i class="fas fa-key"></i> Password</th>
+                        <th><i class="fas fa-clock"></i> Expires</th>
+                        <th style="min-width:220px;"><i class="fas fa-link"></i> Auto-Login Link</th>
+                        <th><i class="fas fa-tools"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, u in users.items() %}
+                    {% set remain = (u.expires_at - now) if u.expires_at else 0 %}
+                    <tr>
+                        <td><strong>{{ name }}</strong></td>
+                        <td><code>{{ u.password }}</code></td>
+                        <td>
+                            {% if u.expires_at %}
+                            {% if remain > 0 %}
+                            <span class="badge badge-on">
+                                <i class="fas fa-hourglass-half"></i> {{ (remain/3600)|round(1) }}h
+                            </span>
+                            {% else %}
+                            <span class="badge badge-off">
+                                <i class="fas fa-exclamation-circle"></i> Expired
+                            </span>
+                            {% endif %}
+                            {% else %}
+                            <span class="badge badge-primary"><i class="fas fa-infinity"></i> Forever</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:11px;word-break:break-all;">
+                            <code style="font-size:10px;">{{ base_url }}/auto/{{ u.token }}</code>
+                        </td>
+                        <td>
+                            <div class="flex" style="gap:4px;flex-wrap:wrap;">
+                                <form class="inline" method="post" action="/owner/extend/{{ name }}">
+                                    <div class="flex" style="gap:4px;">
+                                        <input name="hours" type="number" step="0.5" value="24" style="width:55px;padding:4px 6px;font-size:11px;">
+                                        <button class="btn btn-success btn-xs" title="Extend hours">
+                                            <i class="fas fa-clock"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                                <form class="inline" method="post" action="/owner/delete/{{ name }}" onsubmit="return confirm('⚠️ Delete user {{ name }} permanently?')">
+                                    <button class="btn btn-danger btn-xs" title="Delete user">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== PRICING EDITOR ===== -->
+    <div class="card" id="pricing">
+        <h2><i class="fas fa-edit" style="color:#f59e0b;"></i> Pricing Plans Editor</h2>
+        <p class="muted" style="margin-bottom:16px;">
+            <i class="fas fa-globe"></i> These plans appear on the public <strong>Home</strong> &amp; <strong>Pricing</strong> pages
+        </p>
+        <form method="post" action="/owner/pricing">
+            <div class="row" style="margin-bottom:18px;">
+                <label style="display:flex;flex-direction:column;gap:4px;flex:0 0 auto;">
+                    <span class="muted"><i class="fas fa-dollar-sign"></i> Currency</span>
+                    <input name="currency" value="{{ pricing.currency }}" style="width:80px;">
+                </label>
+                <label style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                    <span class="muted"><i class="fas fa-headset"></i> Contact (where users buy)</span>
+                    <input name="contact" value="{{ pricing.contact }}" placeholder="Telegram / WhatsApp / Email">
+                </label>
+            </div>
+
+            <div id="plans" style="margin-bottom:16px;">
+                {% for p in pricing.plans %}
+                <div class="row" style="margin-bottom:10px;padding:14px;background:rgba(10,18,40,0.4);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);">
+                    <input name="p_name" value="{{ p.name }}" placeholder="Plan name" style="max-width:130px;">
+                    <input name="p_duration" value="{{ p.duration }}" placeholder="Duration" style="max-width:120px;">
+                    <input name="p_price" value="{{ p.price }}" placeholder="Price" style="max-width:80px;">
+                    <input name="p_features" value="{{ p.features }}" placeholder="Features (comma separated)" style="flex:2;min-width:150px;">
+                    <button type="button" class="btn btn-danger btn-xs" onclick="this.parentNode.remove();" title="Remove plan">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex" style="gap:14px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost" onclick="addPlan();">
+                    <i class="fas fa-plus"></i> Add Plan
+                </button>
+                <button class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function addPlan() {
+        const d = document.createElement('div');
+        d.className = 'row';
+        d.style.cssText = 'margin-bottom:10px;padding:14px;background:rgba(10,18,40,0.4);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);';
+        d.innerHTML = `
+                    <input name="p_name" placeholder="Plan name" style="max-width:130px;">
+                    <input name="p_duration" placeholder="Duration" style="max-width:120px;">
+                    <input name="p_price" placeholder="Price" style="max-width:80px;">
+                    <input name="p_features" placeholder="Features (comma separated)" style="flex:2;min-width:150px;">
+                    <button type="button" class="btn btn-danger btn-xs" onclick="this.parentNode.remove();" title="Remove plan">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+        document.getElementById('plans').appendChild(d);
+    }
+
+    // Keyboard shortcut: Ctrl+Enter to add plan
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            const target = e.target;
+            if (target && target.closest && target.closest('#pricing')) {
+                addPlan();
+            }
+        }
+    });
+</script>
+{% endblock %}
