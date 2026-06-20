@@ -1,0 +1,24 @@
+{
+  "currency": "BDT",
+  "contact": "Telegram: @mahim_offcial_143",
+  "plans": [
+    {
+      "name": "Starter",
+      "duration": "24 Hours",
+      "price": "49",
+      "features": "1 file run, 512MB RAM, Real-time logs"
+    },
+    {
+      "name": "Basic",
+      "duration": "7 Days",
+      "price": "199",
+      "features": "Multi-file upload, pip/npm install, 24/7 uptime"
+    },
+    {
+      "name": "Stander",
+      "duration": "30 Days",
+      "price": "300",
+      "features": "30 file run, 2000 MB RAM, Real-time logs"
+    }
+  ]
+}
